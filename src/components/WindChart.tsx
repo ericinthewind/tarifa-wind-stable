@@ -1,5 +1,6 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { WindSession } from "../lib/types";
+import { DISPLAY_LOCALE } from "../lib/date";
 
 type Props = {
   sessions: WindSession[];
@@ -7,7 +8,7 @@ type Props = {
 
 export function WindChart({ sessions }: Props) {
   const data = sessions.slice(0, 10).map((session) => ({
-    label: `${new Date(session.start).toLocaleDateString(undefined, { weekday: "short" })} ${session.startTime}`,
+    label: `${new Date(session.start).toLocaleDateString(DISPLAY_LOCALE, { weekday: "short" })} ${session.startTime}`,
     wind: session.avgWindKt,
     gust: session.maxGustKt,
   }));

@@ -1,7 +1,7 @@
 import type { WindSession } from "../lib/types";
 import { getKiteExcuse } from "../lib/dailyExcuses";
 import { qualityClass, qualityLabel } from "../lib/quality";
-import { addDays, isoLocal, minutesSinceMidnight, startOfDay } from "../lib/date";
+import { addDays, DISPLAY_LOCALE, isoLocal, minutesSinceMidnight, startOfDay } from "../lib/date";
 
 const CAL_START = 8;
 const CAL_END = 21;
@@ -29,7 +29,6 @@ export function WeeklyCalendar({ sessions }: Props) {
           <p className="eyebrow">Wind vs. work</p>
           <h2>Next 7 days</h2>
         </div>
-        <a className="mini-link" href="./tarifa-wind.ics">Sync to calendar →</a>
       </div>
 
       <div className="calendar">
@@ -49,8 +48,8 @@ export function WeeklyCalendar({ sessions }: Props) {
             return (
               <div className="day-col" key={key}>
                 <div className="day-title">
-                  <b>{day.toLocaleDateString(undefined, { weekday: "short" })}</b>
-                  <span>{day.toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>
+                  <b>{day.toLocaleDateString(DISPLAY_LOCALE, { weekday: "short" })}</b>
+                  <span>{day.toLocaleDateString(DISPLAY_LOCALE, { month: "short", day: "numeric" })}</span>
                   <span className="day-excuse">{kiteExcuse}</span>
                 </div>
 

@@ -1,3 +1,5 @@
+export const DISPLAY_LOCALE = "en-GB";
+
 export function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
@@ -21,7 +23,7 @@ export function minutesSinceMidnight(date: Date): number {
 
 export function formatGeneratedAt(value: string): string {
   if (!value) return "not generated yet";
-  return new Date(value).toLocaleString(undefined, {
+  return new Date(value).toLocaleString(DISPLAY_LOCALE, {
     weekday: "short",
     hour: "2-digit",
     minute: "2-digit",

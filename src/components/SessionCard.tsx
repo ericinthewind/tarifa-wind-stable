@@ -1,4 +1,5 @@
 import type { WindSession } from "../lib/types";
+import { DISPLAY_LOCALE } from "../lib/date";
 import { getKiteExcuse } from "../lib/dailyExcuses";
 import { qualityClass, qualityLabel } from "../lib/quality";
 
@@ -7,7 +8,7 @@ type Props = {
 };
 
 export function SessionCard({ session }: Props) {
-  const dayLabel = new Date(session.start).toLocaleDateString(undefined, {
+  const dayLabel = new Date(session.start).toLocaleDateString(DISPLAY_LOCALE, {
     weekday: "short",
     month: "short",
     day: "numeric",

@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { CalendarDays, Compass, Star, Sun, Waves, Wind } from "lucide-react";
 import type { Forecast, WindSession } from "./lib/types";
-import { formatGeneratedAt } from "./lib/date";
+import { formatGeneratedAt, DISPLAY_LOCALE } from "./lib/date";
 import { getKiteExcuse } from "./lib/dailyExcuses";
 import { qualityLabel } from "./lib/quality";
+import { useCalendarFeed } from "./lib/useCalendarFeed";
 import { sampleForecast } from "./lib/sampleForecast";
 import { SessionCard } from "./components/SessionCard";
 import { StatCard } from "./components/StatCard";
@@ -12,6 +13,7 @@ import { WeeklyCalendar } from "./components/WeeklyCalendar";
 export default function App() {
   const [forecast, setForecast] = useState<Forecast>(sampleForecast);
   const [usingSample, setUsingSample] = useState<boolean>(true);
+  const { feedUrl, subscribeUrl } = useCalendarFeed();
 
   useEffect(() => {
     fetch("./forecast.json", { cache: "no-store" })
@@ -35,14 +37,14 @@ export default function App() {
     : null;
   const windHours = sessions.reduce((sum: number, session: WindSession) => sum + session.durationHours, 0).toFixed(0);
   const nextRide = sessions[0]
-    ? `${new Date(sessions[0].start).toLocaleDateString(undefined, { weekday: "short" })} ${sessions[0].startTime}`
+    ? `${new Date(sessions[0].start).toLocaleDateString(DISPLAY_LOCALE, { weekday: "short" })} ${sessions[0].startTime}`
     : "—";
   const maxWave = sessions.length ? `${Math.max(...sessions.map((s: WindSession) => s.maxWaveM)).toFixed(1)} m` : "—";
   const topSessions = useMemo<WindSession[]>(() => sessions.slice(0, 6), [sessions]);
   const nextSession = sessions[0] ?? null;
   const excuseDate = nextSession?.date ?? new Date().toISOString().slice(0, 10);
   const heroExcuse = getKiteExcuse(excuseDate);
-  const heroDateLabel = new Date(nextSession?.start ?? `${excuseDate}T12:00:00`).toLocaleDateString(undefined, {
+  const heroDateLabel = new Date(nextSession?.start ?? `${excuseDate}T12:00:00`).toLocaleDateString(DISPLAY_LOCALE, {
     weekday: "short",
     month: "short",
     day: "numeric",
@@ -67,12 +69,12 @@ export default function App() {
             </p>
             <div className="hero-buttons">
               <div className="hero-cta-row">
-                <a className="secondary" href="./tarifa-wind.ics"><CalendarDays size={18} /> Subscribe</a>
-                <a className="primary" href="./tarifa-wind.ics"><CalendarDays size={18} /> Add to calendar</a>
+                <a className="primary" href={feedUrl || "./tarifa-wind.ics"}><CalendarDays size={18} /> Add to calendar</a>
+                <a className="secondary" href={subscribeUrl || feedUrl || "./tarifa-wind.ics"}><CalendarDays size={18} /> Subscribe to this calendar</a>
               </div>
               <p className="subscribe-hint">
-                <strong>Subscribe</strong> = live updates when the wind changes its mind.
-                <strong> Add to calendar</strong> = one-time import. Same feed, less FOMO.
+                <strong>Add to calendar</strong> uses the .ics link for a one-time import.
+                <strong> Subscribe</strong> uses the webcal URL so Google, Apple, or Outlook keeps updating automatically.
               </p>
             </div>
             {usingSample && (
