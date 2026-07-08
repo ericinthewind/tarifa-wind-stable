@@ -16,7 +16,6 @@ export function WindChart({ sessions }: Props) {
     <section className="chart-shell glass">
       <div className="section-head">
         <div>
-          <p className="eyebrow">Wind o&apos;clock</p>
           <h2>When the ocean gets loud</h2>
         </div>
       </div>
