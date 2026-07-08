@@ -20,10 +20,10 @@ OUTPUT_JSON = os.getenv("OUTPUT_JSON", "public/forecast.json")
 OUTPUT_ICS = os.getenv("OUTPUT_ICS", "public/tarifa-wind.ics")
 
 PROFILE_DEFAULTS = {
-    "kite": {"MIN_WIND_KT": 10, "GOOD_WIND_KT": 14, "EXCELLENT_WIND_KT": 17, "MAX_GUST_KT": 30, "MAX_WAVE_M": 1.2, "MIN_BLOCK_HOURS": 2},
-    "wingfoil": {"MIN_WIND_KT": 12, "GOOD_WIND_KT": 16, "EXCELLENT_WIND_KT": 22, "MAX_GUST_KT": 38, "MAX_WAVE_M": 2.2, "MIN_BLOCK_HOURS": 2},
-    "windsurf": {"MIN_WIND_KT": 18, "GOOD_WIND_KT": 22, "EXCELLENT_WIND_KT": 28, "MAX_GUST_KT": 45, "MAX_WAVE_M": 2.5, "MIN_BLOCK_HOURS": 2},
-    "custom": {"MIN_WIND_KT": 16, "GOOD_WIND_KT": 20, "EXCELLENT_WIND_KT": 25, "MAX_GUST_KT": 40, "MAX_WAVE_M": 1.8, "MIN_BLOCK_HOURS": 2},
+    "kite": {"MIN_WIND_KT": 10, "GOOD_WIND_KT": 14, "EXCELLENT_WIND_KT": 17, "MAX_GUST_KT": 30, "MAX_WAVE_M": 1.2, "MIN_BLOCK_HOURS": 2, "MAX_BLOCK_HOURS": 3},
+    "wingfoil": {"MIN_WIND_KT": 12, "GOOD_WIND_KT": 16, "EXCELLENT_WIND_KT": 22, "MAX_GUST_KT": 38, "MAX_WAVE_M": 2.2, "MIN_BLOCK_HOURS": 2, "MAX_BLOCK_HOURS": 3},
+    "windsurf": {"MIN_WIND_KT": 18, "GOOD_WIND_KT": 22, "EXCELLENT_WIND_KT": 28, "MAX_GUST_KT": 45, "MAX_WAVE_M": 2.5, "MIN_BLOCK_HOURS": 2, "MAX_BLOCK_HOURS": 3},
+    "custom": {"MIN_WIND_KT": 16, "GOOD_WIND_KT": 20, "EXCELLENT_WIND_KT": 25, "MAX_GUST_KT": 40, "MAX_WAVE_M": 1.8, "MIN_BLOCK_HOURS": 2, "MAX_BLOCK_HOURS": 3},
 }
 defaults = PROFILE_DEFAULTS.get(PROFILE, PROFILE_DEFAULTS["kite"])
 MIN_WIND_KT = float(os.getenv("MIN_WIND_KT", defaults["MIN_WIND_KT"]))
@@ -32,6 +32,7 @@ EXCELLENT_WIND_KT = float(os.getenv("EXCELLENT_WIND_KT", defaults["EXCELLENT_WIN
 MAX_GUST_KT = float(os.getenv("MAX_GUST_KT", defaults["MAX_GUST_KT"]))
 MAX_WAVE_M = float(os.getenv("MAX_WAVE_M", defaults["MAX_WAVE_M"]))
 MIN_BLOCK_HOURS = int(os.getenv("MIN_BLOCK_HOURS", defaults["MIN_BLOCK_HOURS"]))
+MAX_BLOCK_HOURS = int(os.getenv("MAX_BLOCK_HOURS", defaults["MAX_BLOCK_HOURS"]))
 
 
 @dataclass
@@ -167,6 +168,17 @@ def build_blocks(hours: list[Hour]) -> list[list[Hour]]:
     return blocks
 
 
+def split_blocks(blocks: list[list[Hour]]) -> list[list[Hour]]:
+    """Split long ride windows into chunks of at most MAX_BLOCK_HOURS."""
+    result: list[list[Hour]] = []
+    for block in blocks:
+        for i in range(0, len(block), MAX_BLOCK_HOURS):
+            chunk = block[i:i + MAX_BLOCK_HOURS]
+            if len(chunk) >= MIN_BLOCK_HOURS:
+                result.append(chunk)
+    return result
+
+
 def score_session(avg_wind: float, max_gust: float, max_wave: float) -> int:
     wind_score = min(62, max(0, (avg_wind - MIN_WIND_KT) / max(1, EXCELLENT_WIND_KT - MIN_WIND_KT) * 62))
     gust_penalty = max(0, max_gust - EXCELLENT_WIND_KT) * 1.1
@@ -279,7 +291,7 @@ def make_ics(sessions: list[dict]) -> str:
 def main() -> None:
     weather = fetch_forecast()
     marine = fetch_marine()
-    sessions = make_sessions(build_blocks(merge_hours(weather, marine)))
+    sessions = make_sessions(split_blocks(build_blocks(merge_hours(weather, marine))))
 
     payload = {
         "spot": SPOT_NAME,
@@ -293,6 +305,7 @@ def main() -> None:
             "maxGustKt": MAX_GUST_KT,
             "maxWaveM": MAX_WAVE_M,
             "minBlockHours": MIN_BLOCK_HOURS,
+            "maxBlockHours": MAX_BLOCK_HOURS,
             "windSectors": WIND_SECTORS,
         },
         "sessions": sessions,

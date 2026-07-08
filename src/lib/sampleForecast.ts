@@ -4,7 +4,7 @@ const now = new Date();
 const start = new Date(now);
 start.setHours(10, 0, 0, 0);
 const end = new Date(now);
-end.setHours(15, 0, 0, 0);
+end.setHours(13, 0, 0, 0);
 
 export const sampleForecast: Forecast = {
   spot: "Tarifa",
@@ -19,7 +19,7 @@ export const sampleForecast: Forecast = {
       end: end.toISOString(),
       date: start.toISOString().slice(0, 10),
       startTime: "10:00",
-      endTime: "15:00",
+      endTime: "13:00",
       title: "🟢 Excellent Levante: 25 kt · score 91",
       quality: "Excellent",
       emoji: "🟢",
@@ -32,7 +32,7 @@ export const sampleForecast: Forecast = {
       maxWaveM: 0.9,
       avgPeriodS: 6,
       score: 91,
-      durationHours: 5,
+      durationHours: 3,
       description: "Sample session",
     },
   ],
