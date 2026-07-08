@@ -39,11 +39,6 @@ jobs:
           OUTPUT_ICS: public/tarifa-wind.ics
         run: python scripts/generate_forecast.py
           
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
