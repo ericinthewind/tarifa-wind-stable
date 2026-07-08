@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { CalendarDays, Compass, Star, Sun, Waves, Wind } from "lucide-react";
 import type { Forecast, WindSession } from "./lib/types";
 import { formatGeneratedAt } from "./lib/date";
+import { getKiteExcuse } from "./lib/dailyExcuses";
 import { qualityLabel } from "./lib/quality";
 import { sampleForecast } from "./lib/sampleForecast";
 import { SessionCard } from "./components/SessionCard";
@@ -38,6 +39,14 @@ export default function App() {
     : "—";
   const maxWave = sessions.length ? `${Math.max(...sessions.map((s: WindSession) => s.maxWaveM)).toFixed(1)} m` : "—";
   const topSessions = useMemo<WindSession[]>(() => sessions.slice(0, 6), [sessions]);
+  const nextSession = sessions[0] ?? null;
+  const excuseDate = nextSession?.date ?? new Date().toISOString().slice(0, 10);
+  const heroExcuse = getKiteExcuse(excuseDate);
+  const heroDateLabel = new Date(nextSession?.start ?? `${excuseDate}T12:00:00`).toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
 
   return (
     <main>
@@ -77,19 +86,20 @@ export default function App() {
               src="./tarifa-kite-hero.png"
               alt="Cartoon view of Tarifa beach with a kite in the sky"
             />
-            <p className="hero-card-label">Next excuse to leave your desk</p>
-            <h2>{sessions[0] ? `${sessions[0].emoji} ${sessions[0].windLabel}` : "Asking the wind nicely…"}</h2>
+            <p className="hero-card-date">{heroDateLabel}</p>
+            <p className="hero-card-excuse">{heroExcuse}</p>
+            <h2>{nextSession ? `${nextSession.emoji} ${nextSession.windLabel}` : "Asking the wind nicely…"}</h2>
             <p className="hero-card-detail">
-              {sessions[0]
-                ? `${sessions[0].startTime}–${sessions[0].endTime} · ${sessions[0].avgWindKt} kt avg · ${sessions[0].durationHours}h · ${qualityLabel(sessions[0].quality)}`
+              {nextSession
+                ? `${nextSession.startTime}–${nextSession.endTime} · ${nextSession.avgWindKt} kt avg · ${nextSession.durationHours}h · ${qualityLabel(nextSession.quality)}`
                 : "Wind radio silence for now."}
             </p>
             <div className="micro">
-              {sessions[0] ? (
+              {nextSession ? (
                 <>
-                  <span><Compass size={15} /> {sessions[0].compass} {sessions[0].windArrow}</span>
-                  <span><Waves size={15} /> {sessions[0].maxWaveM} m swell</span>
-                  <span><Wind size={15} /> {sessions[0].maxGustKt} kt gusts</span>
+                  <span><Compass size={15} /> {nextSession.compass} {nextSession.windArrow}</span>
+                  <span><Waves size={15} /> {nextSession.maxWaveM} m swell</span>
+                  <span><Wind size={15} /> {nextSession.maxGustKt} kt gusts</span>
                 </>
               ) : (
                 <span>No wind intel yet</span>
