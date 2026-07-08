@@ -447,7 +447,7 @@ main {
   color: var(--muted);
 }
 
-.day-holiday {
+.day-excuse {
   display: block;
   margin-top: 6px;
   font-size: 0.58rem;
